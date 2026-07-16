@@ -140,8 +140,8 @@ h2{font-size:clamp(1.6rem,4.6vw,2.6rem)}
   .hero{padding:22px 0 26px}
   .hero-inner{grid-template-columns:1fr;gap:18px}
   .hero-visual{order:-1}
-  /* Imagen más compacta para que el precio entre en la primera pantalla */
-  .hero-img-card{transform:none;max-width:230px;margin:0 auto}
+  /* Imagen principal grande y protagonista en móvil */
+  .hero-img-card{transform:none;max-width:340px;width:88%;margin:0 auto}
   /* Orden natural y compacto: título → descripción corta → precio/CTA → beneficios */
   .hero-copy{display:flex;flex-direction:column}
   .pill{order:1;align-self:flex-start;margin-bottom:8px}
