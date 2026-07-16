@@ -15,7 +15,7 @@ const PRODUCT_CONFIG = {
   currency: "PYG",
 
   // ====== ANALYTICS (reutilizados de la infra VG Shop) ======
-  metaPixelId: "",                       // ← PLACEHOLDER: pegá tu Meta Pixel (vacío = desactivado)
+  metaPixelId: "2412226475899711",       // Meta Pixel VG Shop (activo)
   ga4Id: "G-8WM6CYEB73",                 // GA4 real compartido VG Shop
   gtmId: "GTM-XXXXXXX",                  // ← PLACEHOLDER: pegá tu contenedor GTM (opcional)
   clarityId: "PEGAR_AQUI",               // ← PLACEHOLDER: Microsoft Clarity ID (opcional)
