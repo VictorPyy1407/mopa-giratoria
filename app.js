@@ -12,7 +12,7 @@
   var features = Object.assign({}, CFG.features || {});
   var FKEY = 'mopa360_features';
 
-  var state = { submitting: false, formStarted: false, gIndex: 0 };
+  var state = { submitting: false, formStarted: false, gIndex: 0, qty: 1 };
 
   /* ---------- helpers ---------- */
   function $(s, c) { return (c || document).querySelector(s); }
@@ -102,11 +102,146 @@
     });
   }
 
-  /* ---------- CTAs tracking ---------- */
+  /* ---------- CTAs → abren el checkout ---------- */
   function initCTAs() {
     $$('[data-cta]').forEach(function (b) {
-      b.addEventListener('click', function () { track('add_to_cart', { placement: b.dataset.cta }); });
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        track('add_to_cart', { placement: b.dataset.cta });
+        openCheckout();
+      });
     });
+  }
+
+  /* ---------- Checkout modal ---------- */
+  function openCheckout() {
+    var m = $('#checkoutModal'); if (!m) return;
+    m.classList.add('show'); m.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('no-scroll');
+    if (!state.formStarted) { state.formStarted = true; track('begin_checkout', {}); }
+    setTimeout(function () { var f = $('#nombre'); if (f) f.focus({ preventScroll: true }); }, 260);
+  }
+  function closeCheckout() {
+    var m = $('#checkoutModal'); if (!m) return;
+    m.classList.remove('show'); m.setAttribute('aria-hidden', 'true');
+    if (!$('#success').classList.contains('show')) document.body.classList.remove('no-scroll');
+  }
+  function initCheckout() {
+    var m = $('#checkoutModal'); if (!m) return;
+    var close = $('#checkoutClose');
+    if (close) close.addEventListener('click', closeCheckout);
+    m.addEventListener('click', function (e) { if (e.target === m) closeCheckout(); });
+    document.addEventListener('keydown', function (e) {
+      // Si el mapa está abierto encima, dejá que el mapa maneje Escape.
+      if (e.key === 'Escape' && m.classList.contains('show') && !$('#mapModal').classList.contains('show')) closeCheckout();
+    });
+  }
+
+  /* ---------- Cantidad + resumen del checkout ---------- */
+  function updateSummary() {
+    var q = state.qty;
+    var line = $('#sumUnit'); if (line) line.textContent = fmt(CFG.price * q);
+    var sq = $('#sumQty'); if (sq) sq.textContent = q;
+    var st = $('#sumTotal'); if (st) st.textContent = fmt(CFG.price * q);
+  }
+  function initQty() {
+    var dec = $('#qtyDec'), inc = $('#qtyInc'), val = $('#qtyVal');
+    function render() {
+      if (val) {
+        val.textContent = state.qty;
+        val.classList.add('bump');
+        setTimeout(function () { val.classList.remove('bump'); }, 200);
+      }
+      updateSummary();
+    }
+    if (inc) inc.addEventListener('click', function () { if (state.qty < 10) { state.qty++; render(); } });
+    if (dec) dec.addEventListener('click', function () { if (state.qty > 1) { state.qty--; render(); } });
+    updateSummary();
+  }
+
+  /* ---------- Selector de ubicación (Leaflet + OpenStreetMap, gratis) ---------- */
+  var leafMap = null, leafMarker = null, selectedMapLink = '';
+  function mapsUrl(lat, lng) { return 'https://www.google.com/maps?q=' + lat.toFixed(6) + ',' + lng.toFixed(6); }
+  function setMapLink(link) {
+    selectedMapLink = link;
+    var linkInput = $('#mapLinkInput'), open = $('#mapOpenLink');
+    if (linkInput) linkInput.value = link;
+    if (open) open.href = link || 'https://www.google.com/maps';
+  }
+  function moveMap(lat, lng, zoom) {
+    setMapLink(mapsUrl(lat, lng));
+    if (!leafMap) return;
+    leafMap.setView([lat, lng], zoom || leafMap.getZoom());
+    if (!leafMarker) {
+      leafMarker = L.marker([lat, lng], { draggable: true }).addTo(leafMap);
+      leafMarker.on('dragend', function () { var p = leafMarker.getLatLng(); moveMap(p.lat, p.lng, leafMap.getZoom()); });
+    } else {
+      leafMarker.setLatLng([lat, lng]);
+    }
+  }
+  function initMapInstance() {
+    if (leafMap || typeof L === 'undefined') return;
+    var def = [-25.2637, -57.5759]; // Asunción
+    leafMap = L.map('mapPicker', { zoomControl: true }).setView(def, 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(leafMap);
+    leafMap.on('click', function (e) { moveMap(e.latlng.lat, e.latlng.lng, leafMap.getZoom()); });
+    moveMap(def[0], def[1], 13);
+  }
+  function openMapModal() {
+    var m = $('#mapModal'); if (!m) return;
+    if (typeof L === 'undefined') { toast('El mapa está cargando, probá de nuevo en un momento.'); return; }
+    m.classList.add('show'); m.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('no-scroll');
+    initMapInstance();
+    setTimeout(function () { if (leafMap) leafMap.invalidateSize(); }, 120);
+  }
+  function closeMapModal() {
+    var m = $('#mapModal'); if (!m) return;
+    m.classList.remove('show'); m.setAttribute('aria-hidden', 'true');
+    if ($('#checkoutModal').classList.contains('show')) return; // el checkout sigue abierto
+    document.body.classList.remove('no-scroll');
+  }
+  function searchMapLocation() {
+    var q = ($('#mapSearch').value || '').trim();
+    var err = $('#mapError');
+    if (!q) { err.textContent = 'Escribí una dirección o lugar para buscar.'; return; }
+    err.textContent = 'Buscando ubicación…';
+    fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q + ', Paraguay'))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.length) { err.textContent = 'No encontramos esa dirección. Probá con otra referencia.'; return; }
+        moveMap(Number(data[0].lat), Number(data[0].lon), 17);
+        err.textContent = 'Tocá el mapa o arrastrá el pin para ajustar la ubicación exacta.';
+      })
+      .catch(function () { err.textContent = 'No se pudo buscar. Tocá directamente el mapa para marcar la ubicación.'; });
+  }
+  function useMyLocation() {
+    var err = $('#mapError');
+    if (!navigator.geolocation) { err.textContent = 'Tu navegador no permite ubicación automática. Marcá el mapa manualmente.'; return; }
+    err.textContent = 'Obteniendo tu ubicación…';
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      moveMap(pos.coords.latitude, pos.coords.longitude, 17);
+      err.textContent = 'Ajustá el pin si hace falta y confirmá.';
+    }, function () {
+      err.textContent = 'No pudimos obtener tu ubicación. Marcá el mapa manualmente.';
+    }, { enableHighAccuracy: true, timeout: 8000 });
+  }
+  function initMapPicker() {
+    if (!$('#mapModal')) return;
+    $$('[data-open-map]').forEach(function (b) { b.addEventListener('click', openMapModal); });
+    $$('[data-close-map]').forEach(function (b) { b.addEventListener('click', closeMapModal); });
+    $('#mapModal').addEventListener('click', function (e) { if (e.target.id === 'mapModal') closeMapModal(); });
+    $('#mapSearchButton').addEventListener('click', searchMapLocation);
+    $('#mapSearch').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); searchMapLocation(); } });
+    $('#mapLinkInput').addEventListener('input', function (e) { setMapLink(e.target.value.trim()); });
+    $('#mapConfirm').addEventListener('click', useMyLocation);
+    $('#mapOk').addEventListener('click', function () {
+      var link = ($('#mapLinkInput').value || '').trim() || selectedMapLink;
+      var mi = $('#mapsInput');
+      if (mi) { mi.value = link; mi.classList.toggle('set', !!link); }
+      closeMapModal();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && $('#mapModal').classList.contains('show')) closeMapModal(); });
   }
 
   /* ---------- Galería ---------- */
@@ -305,7 +440,8 @@
     var g = function (n) { var el = $('[name="' + n + '"]'); return el ? el.value.trim() : ''; };
     return {
       nombre: g('nombre'), telefono: g('telefono'), ciudad: g('ciudad'),
-      direccion: g('direccion'), referencia: g('referencia'), comentario: g('comentario')
+      direccion: g('direccion'), referencia: g('referencia'), comentario: g('comentario'),
+      map: g('map')
     };
   }
   function orderNumber() { return '#PY' + Date.now().toString().slice(-6) + rand(10, 99); }
@@ -328,7 +464,7 @@
     var id = orderNumber();
     var isMetro = DELIVERY.some(function (z) { return norm(z) === norm(data.ciudad); });
 
-    var refParts = ['Cantidad: 1 unidad'];
+    var refParts = ['Cantidad: ' + state.qty + (state.qty > 1 ? ' unidades' : ' unidad')];
     if (data.referencia) refParts.push('Ref: ' + data.referencia);
     if (data.comentario) refParts.push('Comentario: ' + data.comentario);
     if (isMetro) {
@@ -343,8 +479,8 @@
       id: id,
       producto: CFG.name,
       precio: CFG.price,
-      cantidad: 1,
-      subtotal: CFG.price,
+      cantidad: state.qty,
+      subtotal: CFG.price * state.qty,
       ganancia: 0,
       nombre: data.nombre,
       telefono: data.telefono,
@@ -354,13 +490,13 @@
       ciudad: data.ciudad,
       direccion: data.direccion,
       referencia: refParts.join(' | '),
-      ubicacion_maps: 'No informado',
+      ubicacion_maps: data.map || 'No informado',
       estado: 'Pendiente',
       origen: CFG.origin,
       created_at: new Date().toISOString()
     };
 
-    track('form_submitted', { quantity: 1 });
+    track('form_submitted', { quantity: state.qty });
     state.submitting = true;
     var btn = $('#confirmOrder');
     btn.classList.add('loading'); btn.disabled = true;
@@ -368,7 +504,7 @@
     saveOrder(order).then(function () {
       state.submitting = false; btn.classList.remove('loading'); btn.disabled = false;
       showSuccess(order, data, isMetro);
-      track('purchase', { transaction_id: id, value: CFG.price, quantity: 1 });
+      track('purchase', { transaction_id: id, value: order.subtotal, quantity: state.qty });
     }).catch(function (err) {
       console.error('[order] error', err);
       state.submitting = false; btn.classList.remove('loading'); btn.disabled = false;
@@ -378,7 +514,7 @@
 
   function showSuccess(order, data, isMetro) {
     $('#successOrderNum').textContent = order.id;
-    $('#successProduct').textContent = CFG.name;
+    $('#successProduct').textContent = CFG.name + (state.qty > 1 ? ' ×' + state.qty : '');
     $('#successTotal').textContent = fmt(order.subtotal);
     $('#successPhone').textContent = order.telefono;
     var tl = $('#successTotalLabel'), st = $('#successStep3');
@@ -394,6 +530,8 @@
       'Total: ' + fmt(order.subtotal) + '\n' +
       'Nombre: ' + data.nombre + '\nCiudad: ' + data.ciudad + '\nDirección: ' + data.direccion;
     $('#successWhats').href = waLink(msg);
+    var co = $('#checkoutModal');
+    if (co) { co.classList.remove('show'); co.setAttribute('aria-hidden', 'true'); }
     var s = $('#success');
     s.classList.add('show'); s.setAttribute('aria-hidden', 'false');
     document.body.classList.add('no-scroll');
@@ -407,6 +545,11 @@
       $$('.field').forEach(function (f) { f.classList.remove('ok', 'err'); });
       $('#shipNote').hidden = true;
       state.formStarted = false;
+      state.qty = 1;
+      var qv = $('#qtyVal'); if (qv) qv.textContent = '1';
+      var mi = $('#mapsInput'); if (mi) { mi.value = ''; mi.classList.remove('set'); }
+      selectedMapLink = '';
+      updateSummary();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
@@ -421,7 +564,7 @@
     },
     terminos: {
       t: 'Términos y Condiciones',
-      b: '<p>El precio publicado es de ' + 'Gs. 145.000' + ' con envío gratis a todo Paraguay.</p>' +
+      b: '<p>El precio publicado es de ' + fmt(CFG.price) + ' con envío gratis a todo Paraguay.</p>' +
          '<p>En Asunción y Central el pago es contra entrega. Para envíos al interior, el pago se coordina de forma anticipada antes del despacho por transportadora.</p>' +
          '<p>La confirmación del pedido a través del formulario no constituye un cobro: nuestro equipo te contactará por WhatsApp para coordinar la entrega.</p>' +
          '<p>Garantía de satisfacción sujeta a las condiciones informadas al momento de la compra.</p>'
@@ -472,6 +615,18 @@
         if (params.transaction_id) window.fbq('track', 'Purchase', mp, { eventID: params.transaction_id });
         else window.fbq('track', 'Purchase', mp);
       }
+    }
+    if (window.ttq && typeof window.ttq.track === 'function') {
+      var tt = {
+        content_id: CFG.id, content_type: 'product', content_name: CFG.name,
+        quantity: params.quantity || 1, price: CFG.price,
+        value: payload.value || CFG.price, currency: CFG.currency
+      };
+      if (event === 'view_content') window.ttq.track('ViewContent', tt);
+      else if (event === 'add_to_cart') window.ttq.track('AddToCart', tt);
+      else if (event === 'begin_checkout') window.ttq.track('InitiateCheckout', tt);
+      else if (event === 'form_submitted') window.ttq.track('SubmitForm', tt);
+      else if (event === 'purchase') window.ttq.track('CompletePayment', tt);
     }
   }
   function initScrollDepth() {
@@ -548,6 +703,25 @@
       y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
     })(window, document, 'clarity', 'script', CFG.clarityId);
   }
+  function initTiktok() {
+    if (!isConfigured(CFG.tiktokPixelId)) return;
+    (function (w, d, t) {
+      w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || [];
+      ttq.methods = ['page', 'track', 'identify', 'instances', 'debug', 'on', 'off', 'once', 'ready', 'alias', 'group', 'enableCookie', 'disableCookie', 'holdConsent', 'revokeConsent', 'grantConsent'];
+      ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))); }; };
+      for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
+      ttq.instance = function (t) { for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]); return e; };
+      ttq.load = function (e, n) {
+        var r = 'https://analytics.tiktok.com/i18n/pixel/events.js', o = n && n.partner;
+        ttq._i = ttq._i || {}; ttq._i[e] = []; ttq._i[e]._u = r; ttq._t = ttq._t || {}; ttq._t[e] = +new Date;
+        ttq._o = ttq._o || {}; ttq._o[e] = n || {};
+        n = document.createElement('script'); n.type = 'text/javascript'; n.async = !0; n.src = r + '?sdkid=' + e + '&lib=' + t;
+        e = document.getElementsByTagName('script')[0]; e.parentNode.insertBefore(n, e);
+      };
+      ttq.load(CFG.tiktokPixelId);
+      ttq.page();
+    })(window, document, 'ttq');
+  }
 
   /* ---------- Config panel (dev) ---------- */
   var FEATURE_LABELS = {
@@ -619,6 +793,9 @@
     initWhats();
     initCities();
     initForm();
+    initCheckout();
+    initQty();
+    initMapPicker();
     initSuccess();
     initLegal();
     initScrollDepth();
@@ -627,6 +804,7 @@
     initGTM();
     initPixel();
     initClarity();
+    initTiktok();
     initConfigPanel();
     initMisc();
     track('view_content');

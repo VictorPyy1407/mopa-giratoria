@@ -11,7 +11,7 @@ const PRODUCT_CONFIG = {
   shortName: "Mopa 360°",
 
   // Precio ÚNICO visible en toda la página (guaraníes, sin puntos).
-  price: 145000,
+  price: 130000,
   currency: "PYG",
 
   // ====== ANALYTICS (reutilizados de la infra VG Shop) ======
@@ -28,7 +28,7 @@ const PRODUCT_CONFIG = {
   supabaseTable: "pedidos_web",
 
   // ====== IMAGEN PRINCIPAL + GALERÍA ======
-  hero: "img/g-compartimento.webp",
+  hero: "img/hero-producto.webp",
   gallery: [
     { src: "img/g-triangular.webp", cap: "Diseño triangular: bordes y esquinas sin suciedad" },
     { src: "img/g-seco-humedo.webp", cap: "Limpia en seco y en húmedo" },

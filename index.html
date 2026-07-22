@@ -7,18 +7,20 @@
   <link rel="icon" type="image/png" href="img/logo-vgshop-256.png" />
   <link rel="apple-touch-icon" href="img/logo-vgshop-256.png" />
   <title>Mopa Triangular 360° | Limpiá más rápido y sin esfuerzo — VG Shop</title>
-  <meta name="description" content="Mopa Esfregona Triangular 360°: llega a esquinas, bordes y debajo de los muebles. Limpia en seco y húmedo. Gs. 145.000 · Delivery GRATIS · Pago contra entrega en todo Paraguay." />
+  <meta name="description" content="Mopa Esfregona Triangular 360°: llega a esquinas, bordes y debajo de los muebles. Limpia en seco y húmedo. Gs. 130.000 · Delivery GRATIS · Pago contra entrega en todo Paraguay." />
 
   <!-- Open Graph / redes -->
   <meta property="og:type" content="product" />
   <meta property="og:title" content="Mopa Triangular 360° — Limpiá más rápido y sin esfuerzo" />
-  <meta property="og:description" content="Llega a esquinas y rincones, gira 360° y limpia en seco o húmedo. Gs. 145.000 · Delivery GRATIS · Pago contra entrega." />
+  <meta property="og:description" content="Llega a esquinas y rincones, gira 360° y limpia en seco o húmedo. Gs. 130.000 · Delivery GRATIS · Pago contra entrega." />
   <meta property="og:image" content="img/oferta-og.jpg" />
   <meta property="og:locale" content="es_PY" />
   <meta name="twitter:card" content="summary_large_image" />
 
-  <link rel="preload" as="image" href="img/g-compartimento.webp" fetchpriority="high" />
+  <link rel="preload" as="image" href="img/hero-producto.webp" fetchpriority="high" />
   <link rel="preconnect" href="https://roruinqorwgolcrhhmpm.supabase.co" crossorigin />
+  <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
   <link rel="stylesheet" href="styles.css" />
 
   <!-- Schema.org Product -->
@@ -33,7 +35,7 @@
     "offers": {
       "@type": "Offer",
       "priceCurrency": "PYG",
-      "price": "145000",
+      "price": "130000",
       "availability": "https://schema.org/InStock",
       "areaServed": "PY"
     },
@@ -100,7 +102,7 @@
           <div class="offer-card">
             <div class="offer-price">
               <span class="offer-label">Precio hoy</span>
-              <span class="price" data-price>Gs. 145.000</span>
+              <span class="price" data-price>Gs. 130.000</span>
             </div>
             <div class="offer-perks">
               <span>🚚 Delivery <b>GRATIS</b></span>
@@ -113,8 +115,8 @@
 
         <div class="hero-visual reveal">
           <div class="hero-img-card">
-            <img src="img/g-compartimento.webp" width="1000" height="1000"
-                 alt="Mopa Triangular 360° limpiando un piso de madera" fetchpriority="high" decoding="async" />
+            <img src="img/hero-producto.webp" width="1024" height="1024"
+                 alt="Mopa Triangular 360° limpiando en seco y húmedo" fetchpriority="high" decoding="async" />
             <div class="hero-badge">
               <span class="stars">★★★★★</span>
               <span>4.9 · +1.200 vendidas</span>
@@ -268,11 +270,11 @@
       <div class="wrap final-inner">
         <div class="final-media reveal">
           <img data-src="img/oferta.webp" width="1000" height="1250"
-               alt="Mopa Triangular 360° — Oferta especial Gs. 145.000" loading="lazy" decoding="async" class="lazy" />
+               alt="Mopa Triangular 360° — Oferta especial Gs. 130.000" loading="lazy" decoding="async" class="lazy" />
         </div>
         <div class="final-box reveal">
           <span class="fire">🔥 Oferta Especial</span>
-          <div class="final-price" data-price>Gs. 145.000</div>
+          <div class="final-price" data-price>Gs. 130.000</div>
           <ul class="final-perks">
             <li>🚚 Delivery <b>GRATIS</b></li>
             <li>💵 Pagás cuando recibís</li>
@@ -283,69 +285,6 @@
             <p>Quedan <b id="stockNum">41</b> unidades en stock</p>
           </div>
           <a href="#form" class="btn btn-orange btn-block btn-xl" data-cta="final">QUIERO LA MÍA</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== FORMULARIO ===== -->
-    <section class="order" id="form">
-      <div class="wrap wrap-narrow">
-        <div class="order-card reveal">
-          <h2>Completá tu pedido</h2>
-          <p class="order-sub">Dejanos tus datos y te contactamos para coordinar la entrega. <b>No pagás nada ahora.</b></p>
-
-          <div class="order-summary">
-            <div class="os-row"><span>Mopa Triangular 360°</span><b data-price>Gs. 145.000</b></div>
-            <div class="os-row muted"><span>Envío</span><b class="free">GRATIS</b></div>
-            <div class="os-row total"><span>Total a pagar al recibir</span><b data-price>Gs. 145.000</b></div>
-          </div>
-
-          <form id="orderForm" novalidate>
-            <div class="grid-2">
-              <div class="field" data-field="nombre">
-                <label for="nombre">Nombre y apellido *</label>
-                <input id="nombre" name="nombre" type="text" autocomplete="name" placeholder="Ej: María González" required />
-                <small class="err-msg">Escribí tu nombre completo</small>
-              </div>
-              <div class="field" data-field="telefono">
-                <label for="telefono">Teléfono / WhatsApp *</label>
-                <input id="telefono" name="telefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej: 0981 234 567" required />
-                <small class="err-msg">Ingresá un teléfono válido</small>
-              </div>
-            </div>
-
-            <div class="grid-2">
-              <div class="field" data-field="ciudad">
-                <label for="ciudad">Ciudad *</label>
-                <input id="ciudad" name="ciudad" type="text" list="cityList" autocomplete="address-level2" placeholder="Ej: Asunción" required />
-                <datalist id="cityList"></datalist>
-                <small class="err-msg">Indicá tu ciudad</small>
-              </div>
-              <div class="field" data-field="direccion">
-                <label for="direccion">Dirección *</label>
-                <input id="direccion" name="direccion" type="text" autocomplete="street-address" placeholder="Calle y número" required />
-                <small class="err-msg">Indicá tu dirección</small>
-              </div>
-            </div>
-
-            <div class="field" data-field="referencia">
-              <label for="referencia">Referencia (opcional)</label>
-              <input id="referencia" name="referencia" type="text" placeholder="Ej: casa portón blanco, entre calles..." />
-            </div>
-
-            <div class="field" data-field="comentario">
-              <label for="comentario">Comentarios (opcional)</label>
-              <textarea id="comentario" name="comentario" rows="2" placeholder="¿Algo que debamos saber?"></textarea>
-            </div>
-
-            <p class="ship-note" id="shipNote" hidden></p>
-
-            <button type="submit" class="btn btn-primary btn-block btn-xl" id="confirmOrder">
-              <span class="btn-label">Confirmar Pedido</span>
-              <span class="spinner" aria-hidden="true"></span>
-            </button>
-            <p class="form-secure">🔒 Tus datos están seguros. Solo los usamos para coordinar tu entrega.</p>
-          </form>
         </div>
       </div>
     </section>
@@ -384,7 +323,7 @@
   <div class="sticky-bar" id="stickyBar">
     <div class="sb-info">
       <span class="sb-name">Mopa Triangular 360°</span>
-      <span class="sb-price" data-price>Gs. 145.000</span>
+      <span class="sb-price" data-price>Gs. 130.000</span>
     </div>
     <a href="#form" class="btn btn-orange" data-cta="sticky">Comprar</a>
   </div>
@@ -413,6 +352,111 @@
     </div>
   </div>
 
+  <!-- ===== Checkout (modal) ===== -->
+  <div class="checkout" id="checkoutModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+    <div class="checkout-card">
+      <button class="checkout-close" id="checkoutClose" aria-label="Cerrar">×</button>
+
+      <div class="checkout-hero">
+        <span class="fire">🔥 Oferta Especial · Solo hoy</span>
+        <h2 id="checkoutTitle">🛒 Completá tu pedido</h2>
+        <p class="checkout-sub">Envío <b>GRATIS</b> en Asunción y Central · Pagás en efectivo al recibir</p>
+      </div>
+
+      <div class="checkout-body">
+        <!-- Producto + cantidad -->
+        <div class="checkout-prod">
+          <img src="img/hero-producto.webp" alt="Mopa Triangular 360°" width="58" height="58" loading="lazy" />
+          <div class="cp-info">
+            <b>Mopa Triangular 360°</b>
+            <span>Limpieza inteligente · VG Shop</span>
+          </div>
+          <div class="qty">
+            <button type="button" id="qtyDec" aria-label="Quitar una unidad">−</button>
+            <span class="val" id="qtyVal">1</span>
+            <button type="button" id="qtyInc" aria-label="Agregar una unidad">+</button>
+          </div>
+        </div>
+
+        <form id="orderForm" novalidate>
+          <div class="grid-2">
+            <div class="field" data-field="nombre">
+              <input id="nombre" name="nombre" type="text" autocomplete="name" placeholder="Nombre y apellido" aria-label="Nombre y apellido" required />
+              <small class="err-msg">Escribí tu nombre completo</small>
+            </div>
+            <div class="field" data-field="telefono">
+              <input id="telefono" name="telefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="Teléfono / WhatsApp" aria-label="Teléfono / WhatsApp" required />
+              <small class="err-msg">Ingresá un teléfono válido</small>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field" data-field="ciudad">
+              <input id="ciudad" name="ciudad" type="text" list="cityList" autocomplete="address-level2" placeholder="Ciudad" aria-label="Ciudad" required />
+              <datalist id="cityList"></datalist>
+              <small class="err-msg">Indicá tu ciudad</small>
+            </div>
+            <div class="field" data-field="direccion">
+              <input id="direccion" name="direccion" type="text" autocomplete="street-address" placeholder="Dirección" aria-label="Dirección" required />
+              <small class="err-msg">Indicá tu dirección</small>
+            </div>
+          </div>
+
+          <!-- Ubicación exacta (Leaflet · OpenStreetMap) -->
+          <div class="location-row">
+            <input type="url" name="map" id="mapsInput" placeholder="📍 Ubicación exacta (opcional)" readonly aria-label="Ubicación en el mapa" />
+            <button type="button" class="btn-map" data-open-map>Marcar en mapa</button>
+          </div>
+
+          <div class="field" data-field="referencia">
+            <input id="referencia" name="referencia" type="text" placeholder="Referencia (opcional)" aria-label="Referencia" />
+          </div>
+
+          <div class="field" data-field="comentario">
+            <textarea id="comentario" name="comentario" rows="2" placeholder="Comentarios (opcional)" aria-label="Comentarios"></textarea>
+          </div>
+
+          <p class="ship-note" id="shipNote" hidden></p>
+
+          <div class="order-summary">
+            <div class="checkout-lines-title">🧾 Resumen del pedido</div>
+            <div class="os-row"><span>Mopa Triangular 360° ×<span id="sumQty">1</span></span><b id="sumUnit" data-price>Gs. 130.000</b></div>
+            <div class="os-row muted"><span>Delivery</span><b class="free">GRATIS en Asunción y Central</b></div>
+            <div class="os-row total"><span>Total a pagar</span><b id="sumTotal">Gs. 130.000</b></div>
+          </div>
+
+          <button type="submit" class="btn btn-orange btn-block btn-xl" id="confirmOrder">
+            <span class="btn-label">CONFIRMAR PEDIDO</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+          <p class="form-secure">🔒 <b>Tus datos están protegidos.</b> Pagás en efectivo al recibir.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Mapa (ubicación exacta · Leaflet + OpenStreetMap) ===== -->
+  <div class="map-modal" id="mapModal" role="dialog" aria-modal="true" aria-labelledby="mapTitle" aria-hidden="true">
+    <div class="map-dialog">
+      <div class="map-header">
+        <h2 id="mapTitle">📍 Marcá tu ubicación</h2>
+        <button type="button" class="map-close" data-close-map aria-label="Cerrar mapa">×</button>
+      </div>
+      <div class="map-search">
+        <input type="search" id="mapSearch" placeholder="Buscar dirección o lugar…" />
+        <button type="button" id="mapSearchButton">Buscar</button>
+      </div>
+      <div class="map-picker" id="mapPicker" aria-label="Mapa para seleccionar ubicación"></div>
+      <div class="map-link-row">
+        <input type="url" id="mapLinkInput" placeholder="O pegá un enlace de Google Maps" />
+        <a id="mapOpenLink" href="https://www.google.com/maps" target="_blank" rel="noopener">Abrir ↗</a>
+      </div>
+      <p class="map-error" id="mapError" role="alert">Tocá el mapa o arrastrá el pin para marcar tu ubicación exacta.</p>
+      <button type="button" class="map-confirm" id="mapConfirm">📍 Usar mi ubicación actual</button>
+      <button type="button" class="map-ok" id="mapOk">Confirmar ubicación</button>
+    </div>
+  </div>
+
   <!-- ===== Modal legal ===== -->
   <div class="modal" id="legalModal" aria-hidden="true">
     <div class="modal-card">
@@ -425,6 +469,7 @@
   <!-- ===== Toast ===== -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js" defer></script>
   <script src="config.js"></script>
   <script src="app.js" defer></script>
 </body>
